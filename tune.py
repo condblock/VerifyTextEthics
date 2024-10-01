@@ -6,7 +6,7 @@ from sklearn.metrics import classification_report
 import glob
 
 # 데이터셋 클래스 정의
-class CustomDataset(Dataset):
+class Dataset(Dataset):
     def __init__(self, data, tokenizer, max_len):
         self.data = data
         self.tokenizer = tokenizer
@@ -64,7 +64,7 @@ def load_data(file_pattern):
 
 # 데이터셋 및 데이터로더 생성
 def create_data_loader(data, tokenizer, max_len, batch_size):
-    ds = CustomDataset(data, tokenizer, max_len)
+    ds = Dataset(data, tokenizer, max_len)
     return DataLoader(ds, batch_size=batch_size, num_workers=4)
 
 # 모델 및 토크나이저 초기화
