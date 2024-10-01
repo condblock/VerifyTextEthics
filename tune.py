@@ -76,7 +76,7 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 model.to(device)
 
 # 데이터 로드
-train_data = load_data('dataset/train/merged_train_data.json')
+train_data = load_data('dataset/train/talksets-train-*.json')
 val_data = load_data('dataset/valid/talksets-train-6.json')
 
 # 데이터로더 생성
@@ -87,13 +87,17 @@ val_data_loader = create_data_loader(val_data, tokenizer, max_len=128, batch_siz
 training_args = TrainingArguments(
     output_dir='./results',
     num_train_epochs=3,
-    per_device_train_batch_size=16,
-    per_device_eval_batch_size=16,
+    per_device_train_batch_size=32,
+    per_device_eval_batch_size=32,
     warmup_steps=500,
     weight_decay=0.01,
     logging_dir='./logs',
     logging_steps=10,
-    evaluation_strategy="epoch"
+    save_steps=500,
+    save_total_limit=2,
+    evaluation_strategy="epoch",
+    eval_steps=500,
+    fp16=True
 )
 
 trainer = Trainer(
@@ -108,11 +112,3 @@ trainer.train()
 
 # 모델 저장
 trainer.save_model('./saved_model')
-
-# 모델 검증
-predictions, labels, _ = trainer.predict(val_data_loader.dataset)
-predictions = torch.sigmoid(torch.tensor(predictions)).numpy()
-predictions = (predictions > 0.5).astype(int)
-
-# 성능 평가
-print(classification_report(labels, predictions, target_names=['CENSURE', 'HATE', 'DISCRIMINATION', 'SEXUAL', 'ABUSE', 'VIOLENCE', 'CRIME']))
